@@ -9,7 +9,6 @@ using OpenFTTH.EventSourcing.Postgres;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
-using System.Reflection;
 using System.Text.Json;
 
 namespace OpenFTTH.UserEditHistory;
