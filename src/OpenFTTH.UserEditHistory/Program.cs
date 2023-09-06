@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OpenFTTH.EventSourcing;
 
 namespace OpenFTTH.UserEditHistory;
 
@@ -14,7 +16,9 @@ internal static class Program
 
         try
         {
+            host.Services.GetService<IEventStore>()!.ScanForProjections();
             await host.StartAsync().ConfigureAwait(false);
+            await host.WaitForShutdownAsync().ConfigureAwait(false);
             logger.LogInformation("User edit history host has been stopped, shutting down.");
         }
         catch (Exception ex)

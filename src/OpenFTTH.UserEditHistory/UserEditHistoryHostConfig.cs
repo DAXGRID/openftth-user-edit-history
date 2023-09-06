@@ -9,6 +9,8 @@ using OpenFTTH.EventSourcing.Postgres;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
+using System.Reflection;
+using System.Text.Json;
 
 namespace OpenFTTH.UserEditHistory;
 
@@ -18,8 +20,8 @@ internal static class UserEditHistoryHostConfig
     {
         var hostBuilder = new HostBuilder();
 
-        ConfigureLogging(hostBuilder);
         ConfigureSerialization();
+        ConfigureLogging(hostBuilder);
         ConfigureServices(hostBuilder);
 
         return hostBuilder.Build();
@@ -27,15 +29,23 @@ internal static class UserEditHistoryHostConfig
 
     private static void ConfigureServices(IHostBuilder hostBuilder)
     {
+        var settingsJson = JsonDocument.Parse(File.ReadAllText("appsettings.json"))
+            .RootElement.GetProperty("settings").ToString();
+
+        var setting = System.Text.Json.JsonSerializer.Deserialize<Setting>(settingsJson) ??
+            throw new InvalidOperationException("Could not deserialize appsettings into settings.");
+
         hostBuilder.ConfigureServices((hostContext, services) =>
         {
             services.AddHostedService<UserEditHistoryHost>();
+
+            services.AddSingleton<IProjection, UserEditHistoryProjection>();
 
             services.AddSingleton<IEventStore>(
                 e =>
                 new PostgresEventStore(
                     serviceProvider: e.GetRequiredService<IServiceProvider>(),
-                    connectionString: hostContext.Configuration.GetSection("EventStore").GetValue<string>("ConnectionString"),
+                    connectionString: setting.EventStoreConnectionString,
                     databaseSchemaName: "events"
                 )
             );
@@ -59,7 +69,8 @@ internal static class UserEditHistoryHostConfig
         hostBuilder.ConfigureServices((hostContext, services) =>
         {
             var loggingConfiguration = new ConfigurationBuilder()
-               .AddEnvironmentVariables().Build();
+                .AddEnvironmentVariables()
+                .Build();
 
             services.AddLogging(loggingBuilder =>
             {
