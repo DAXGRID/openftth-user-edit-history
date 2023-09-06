@@ -4,14 +4,36 @@ using OpenFTTH.Events.RouteNetwork;
 
 namespace OpenFTTH.UserEditHistory;
 
+internal sealed record UserEditHistory
+{
+    public Guid Id { get; init; }
+    public string? Username { get; init; }
+    public DateTime CreatedDate { get; init; }
+    public DateTime? LastEditedDate { get; init; }
+
+    public UserEditHistory(
+        Guid id,
+        string? username,
+        DateTime createdDate)
+    {
+        Id = id;
+        Username = username;
+        CreatedDate = createdDate;
+    }
+}
+
 internal sealed class UserEditHistoryProjection : ProjectionBase
 {
+    private readonly Dictionary<Guid, UserEditHistory> _userEditHistories = new();
+
+    public IReadOnlyDictionary<Guid, UserEditHistory> UserEditHistories => _userEditHistories;
+
     public UserEditHistoryProjection()
     {
         ProjectEventAsync<RouteNetworkEditOperationOccuredEvent>(ProjectAsync);
     }
 
-    private static Task ProjectAsync(IEventEnvelope eventEnvelope)
+    private Task ProjectAsync(IEventEnvelope eventEnvelope)
     {
         if (eventEnvelope is null)
         {
@@ -31,7 +53,7 @@ internal sealed class UserEditHistoryProjection : ProjectionBase
         return Task.CompletedTask;
     }
 
-    private static void Handle(RouteNetworkEditOperationOccuredEvent editOperation)
+    private void Handle(RouteNetworkEditOperationOccuredEvent editOperation)
     {
         foreach (var command in editOperation.RouteNetworkCommands)
         {
@@ -40,27 +62,85 @@ internal sealed class UserEditHistoryProjection : ProjectionBase
                 switch (routeNetworkEvent)
                 {
                     case RouteNodeAdded domainEvent:
+                        UpdateModified(
+                            domainEvent.NodeId,
+                            editOperation.UserName,
+                            editOperation.EventTimestamp);
                         break;
                     case RouteNodeInfoModified domainEvent:
+                        UpdateModified(
+                            domainEvent.NodeId,
+                            editOperation.UserName,
+                            editOperation.EventTimestamp);
                         break;
                     case RouteNodeGeometryModified domainEvent:
+                        UpdateModified(
+                            domainEvent.NodeId,
+                            editOperation.UserName,
+                            editOperation.EventTimestamp);
                         break;
                     case RouteNodeMarkedForDeletion domainEvent:
+                        UpdateModified(
+                            domainEvent.NodeId,
+                            editOperation.UserName,
+                            editOperation.EventTimestamp);
                         break;
-
                     case RouteSegmentAdded domainEvent:
+                        UpdateModified(
+                            domainEvent.SegmentId,
+                            editOperation.UserName,
+                            editOperation.EventTimestamp);
                         break;
                     case RouteSegmentGeometryModified domainEvent:
+                        UpdateModified(
+                            domainEvent.SegmentId,
+                            editOperation.UserName,
+                            editOperation.EventTimestamp);
                         break;
                     case RouteSegmentInfoModified domainEvent:
+                        UpdateModified(
+                            domainEvent.SegmentId,
+                            editOperation.UserName,
+                            editOperation.EventTimestamp);
                         break;
                     case RouteSegmentMarkedForDeletion domainEvent:
+                        UpdateModified(
+                            domainEvent.SegmentId,
+                            editOperation.UserName,
+                            editOperation.EventTimestamp);
                         break;
-
                     case ObjectInfoModified domainEvent:
+                        UpdateModified(
+                            domainEvent.AggregateId,
+                            editOperation.UserName,
+                            editOperation.EventTimestamp);
                         break;
                 }
             }
+        }
+    }
+
+    private void UpdateModified(
+        Guid elementId,
+        string? username,
+        DateTime timestamp)
+    {
+        if (!_userEditHistories.ContainsKey(elementId))
+        {
+            _userEditHistories.Add(
+                elementId,
+                new UserEditHistory(
+                    elementId,
+                    username,
+                    timestamp));
+        }
+        else
+        {
+            _userEditHistories[elementId] = _userEditHistories[elementId] with
+            {
+                Username = username,
+                LastEditedDate = timestamp
+            };
         }
     }
 }

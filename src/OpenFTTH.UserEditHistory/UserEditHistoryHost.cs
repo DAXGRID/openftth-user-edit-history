@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using OpenFTTH.EventSourcing;
 
 namespace OpenFTTH.UserEditHistory;
@@ -28,6 +29,13 @@ internal sealed class UserEditHistoryHost : BackgroundService
         await _eventStore
             .DehydrateProjectionsAsync(stoppingToken)
             .ConfigureAwait(false);
+
+        var userEditHistoryProjection = _eventStore.Projections.Get<UserEditHistoryProjection>();
+
+        foreach (var x in userEditHistoryProjection.UserEditHistories)
+        {
+            Console.WriteLine(JsonConvert.SerializeObject(x));
+        }
 
         _logger.LogInformation("Finished initial dehydration.");
 
