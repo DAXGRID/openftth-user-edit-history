@@ -6,6 +6,7 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using OpenFTTH.EventSourcing;
 using OpenFTTH.EventSourcing.Postgres;
+using OpenFTTH.UserEditHistory.Database;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
@@ -39,6 +40,13 @@ internal static class UserEditHistoryHostConfig
             services.AddHostedService<UserEditHistoryHost>();
 
             services.AddSingleton<IProjection, UserEditHistoryProjection>();
+
+            services.AddSingleton<IUserEditHistoryDatabase, UserEditHistoryPostgres>(
+                e =>
+                new UserEditHistoryPostgres(
+                    setting.ConnectionString
+                )
+            );
 
             services.AddSingleton<IEventStore>(
                 e =>

@@ -2,6 +2,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using OpenFTTH.EventSourcing;
+using OpenFTTH.UserEditHistory.Database;
 
 namespace OpenFTTH.UserEditHistory;
 
@@ -9,13 +10,16 @@ internal sealed class UserEditHistoryHost : BackgroundService
 {
     private readonly ILogger<UserEditHistoryHost> _logger;
     private readonly IEventStore _eventStore;
+    private readonly IUserEditHistoryDatabase _userEditHistoryDatabase;
 
     public UserEditHistoryHost(
         ILogger<UserEditHistoryHost> logger,
-        IEventStore eventStore)
+        IEventStore eventStore,
+        IUserEditHistoryDatabase userEditHistoryDatabase)
     {
         _logger = logger;
         _eventStore = eventStore;
+        _userEditHistoryDatabase = userEditHistoryDatabase;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -23,6 +27,9 @@ internal sealed class UserEditHistoryHost : BackgroundService
         _logger.LogInformation(
             "Starting {BackgroundServiceName}",
             nameof(BackgroundService));
+
+        _logger.LogInformation("Init database.");
+        _userEditHistoryDatabase.InitSchema();
 
         _logger.LogInformation("Starting initial dehydration of projections.");
 
