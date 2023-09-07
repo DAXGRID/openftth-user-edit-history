@@ -26,12 +26,28 @@ internal sealed record UserEditHistory
 internal sealed class UserEditHistoryProjection : ProjectionBase
 {
     private readonly Dictionary<Guid, UserEditHistory> _userEditHistories = new();
+    private readonly HashSet<Guid> _changedEntityIds = new();
 
     public IReadOnlyDictionary<Guid, UserEditHistory> UserEditHistories => _userEditHistories;
+
+    public HashSet<Guid> ChangedEntityIds => _changedEntityIds;
+
+    public bool InitialDehydrationFinished { get; private set; }
 
     public UserEditHistoryProjection()
     {
         ProjectEventAsync<RouteNetworkEditOperationOccuredEvent>(ProjectAsync);
+    }
+
+    public void ClearChangedEntityIds()
+    {
+        _changedEntityIds.Clear();
+    }
+
+    public Task DehydrateFinishAsync()
+    {
+        InitialDehydrationFinished = true;
+        return Task.CompletedTask;
     }
 
     private Task ProjectAsync(IEventEnvelope eventEnvelope)
@@ -132,16 +148,21 @@ internal sealed class UserEditHistoryProjection : ProjectionBase
                 elementId,
                 new UserEditHistory(
                     elementId,
-                    username,
+                    string.IsNullOrWhiteSpace(username) ? null : username,
                     timestamp));
         }
         else
         {
             _userEditHistories[elementId] = _userEditHistories[elementId] with
             {
-                EditedUsername = username,
+                EditedUsername = string.IsNullOrWhiteSpace(username) ? null : username,
                 EditedTimestamp = timestamp
             };
+        }
+
+        if (InitialDehydrationFinished)
+        {
+            _changedEntityIds.Add(elementId);
         }
     }
 }
