@@ -39,10 +39,10 @@ internal sealed class UserEditHistoryHost : BackgroundService
 
         var userEditHistoryProjection = _eventStore.Projections.Get<UserEditHistoryProjection>();
 
-        foreach (var x in userEditHistoryProjection.UserEditHistories)
-        {
-            Console.WriteLine(JsonConvert.SerializeObject(x));
-        }
+        _logger.LogInformation("Bulk upserting user edit histories.");
+        _userEditHistoryDatabase.BulkUpsert(
+            userEditHistoryProjection.UserEditHistories.Values.ToArray()
+        );
 
         _logger.LogInformation("Finished initial dehydration.");
 

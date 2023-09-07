@@ -7,18 +7,19 @@ namespace OpenFTTH.UserEditHistory;
 internal sealed record UserEditHistory
 {
     public Guid Id { get; init; }
-    public string? Username { get; init; }
-    public DateTime CreatedDate { get; init; }
-    public DateTime? LastEditedDate { get; init; }
+    public string? CreatedUsername { get; init; }
+    public DateTime CreatedTimestamp { get; init; }
+    public DateTime? EditedTimestamp { get; init; }
+    public string? EditedUsername { get; init; }
 
     public UserEditHistory(
         Guid id,
-        string? username,
-        DateTime createdDate)
+        string? createdUsername,
+        DateTime createdTimestamp)
     {
         Id = id;
-        Username = username;
-        CreatedDate = createdDate;
+        CreatedUsername = createdUsername;
+        CreatedTimestamp = createdTimestamp;
     }
 }
 
@@ -138,8 +139,8 @@ internal sealed class UserEditHistoryProjection : ProjectionBase
         {
             _userEditHistories[elementId] = _userEditHistories[elementId] with
             {
-                Username = username,
-                LastEditedDate = timestamp
+                EditedUsername = username,
+                EditedTimestamp = timestamp
             };
         }
     }
