@@ -15,7 +15,7 @@ internal sealed class UserEditHistoryPostgres : IUserEditHistoryDatabase
     {
         const string schemaSql = @"
 CREATE TABLE IF NOT EXISTS route_network.user_edit_history (
-  id uuid PRIMARY KEY,
+  route_network_element_id uuid PRIMARY KEY,
   created_username varchar(255) NULL,
   created_timestamp timestamptz NOT NULL,
   edited_username varchar(255) NULL,
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS route_network.user_edit_history (
 
         const string tempTableSql = @"
 CREATE TEMP TABLE user_edit_history_tmp (
-  id uuid PRIMARY KEY,
+  route_network_element_id uuid PRIMARY KEY,
   created_username varchar(255) NULL,
   created_timestamp timestamptz NOT NULL,
   edited_username varchar(255) NULL,
@@ -52,7 +52,7 @@ CREATE TEMP TABLE user_edit_history_tmp (
 
         const string binaryImportSql = @"
 COPY user_edit_history_tmp (
-  id,
+  route_network_element_id,
   created_username,
   created_timestamp,
   edited_username,
@@ -78,13 +78,13 @@ COPY user_edit_history_tmp (
         // Perform upsert from the temporary table to the target table
         const string updatePrimaryTableSql = @"
 INSERT INTO route_network.user_edit_history (
-  id,
+  route_network_element_id,
   created_username,
   created_timestamp,
   edited_username,
   edited_timestamp)
 SELECT * FROM user_edit_history_tmp
-ON CONFLICT (id) DO UPDATE
+ON CONFLICT (route_network_element_id) DO UPDATE
 SET
   edited_username = EXCLUDED.edited_username,
   edited_timestamp = EXCLUDED.edited_timestamp";
@@ -102,18 +102,18 @@ SET
 
         const string upsertCommand = @"
     INSERT INTO route_network.user_edit_history (
-      id,
+      route_network_element_id,
       created_username,
       created_timestamp,
       edited_username,
       edited_timestamp)
     VALUES (
-      @id,
+      @route_network_element_id,
       @created_username,
       @created_timestamp,
       @edited_username,
       @edited_timestamp)
-    ON CONFLICT (ID) DO UPDATE
+    ON CONFLICT (route_network_element_id) DO UPDATE
     SET
       edited_username = @edited_username,
       edited_timestamp = @edited_timestamp;
@@ -124,7 +124,7 @@ SET
             using var command = new NpgsqlCommand(upsertCommand, connection);
 
             command.Parameters.AddWithValue(
-                "@id",
+                "@route_network_element_id",
                 userEditHistory.Id);
 
             command.Parameters.AddWithValue(
