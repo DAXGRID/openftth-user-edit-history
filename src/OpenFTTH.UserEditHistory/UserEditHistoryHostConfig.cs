@@ -27,7 +27,7 @@ internal static class UserEditHistoryHostConfig
         return hostBuilder.Build();
     }
 
-    private static void ConfigureServices(IHostBuilder hostBuilder)
+    private static void ConfigureServices(HostBuilder hostBuilder)
     {
         var settingsJson = JsonDocument.Parse(File.ReadAllText("appsettings.json"))
             .RootElement.GetProperty("settings").ToString();
@@ -71,7 +71,7 @@ internal static class UserEditHistoryHostConfig
         });
     }
 
-    private static void ConfigureLogging(IHostBuilder hostBuilder)
+    private static void ConfigureLogging(HostBuilder hostBuilder)
     {
         hostBuilder.ConfigureServices((hostContext, services) =>
         {
