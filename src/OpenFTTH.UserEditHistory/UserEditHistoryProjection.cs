@@ -139,7 +139,10 @@ internal sealed class UserEditHistoryProjection : ProjectionBase
         string? username,
         DateTime timestamp)
     {
+        #pragma warning disable CA1854
+        // We do not do double lookup here, so the warning is not a problem.
         if (!_userEditHistories.ContainsKey(elementId))
+        #pragma warning restore CA1854
         {
             _userEditHistories.Add(
                 elementId,
