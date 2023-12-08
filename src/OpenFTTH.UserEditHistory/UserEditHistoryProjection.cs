@@ -52,10 +52,7 @@ internal sealed class UserEditHistoryProjection : ProjectionBase
 
     private Task ProjectAsync(IEventEnvelope eventEnvelope)
     {
-        if (eventEnvelope is null)
-        {
-            throw new ArgumentNullException(nameof(eventEnvelope));
-        }
+        ArgumentNullException.ThrowIfNull(eventEnvelope);
 
         switch (eventEnvelope.Data)
         {
