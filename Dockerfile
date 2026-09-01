@@ -1,5 +1,5 @@
 ARG PROJECT_NAME=OpenFTTH.UserEditHistory
-ARG DOTNET_VERSION=8.0
+ARG DOTNET_VERSION=10.0
 
 FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION} AS build-env
 

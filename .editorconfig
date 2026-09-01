@@ -17,3 +17,7 @@ dotnet_diagnostic.CA2326.severity = none
 # CA2327: When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure
 # We always use interal data, so no user values er ever passed, therefore it is safe.
 dotnet_diagnostic.CA2327.severity = none
+
+
+# CA1873: We won't disable logging.
+dotnet_diagnostic.CA1873.severity = none
