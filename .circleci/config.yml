@@ -9,7 +9,7 @@ executors:
         password: $DOCKER_ACCESSTOKEN
   docker-publisher:
     environment:
-      IMAGE_NAME: openftth/user-edit-history
+      IMAGE_NAME: daxgrid/user-edit-history
     docker:
       - image: cimg/base:2026.08
         auth:
