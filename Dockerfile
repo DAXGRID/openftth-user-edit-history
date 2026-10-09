@@ -29,6 +29,8 @@ ENV EXECUTEABLE=${PROJECT_NAME}.dll
 
 WORKDIR /app
 
+RUN apk add --no-cache icu-libs krb5-libs
+
 COPY --from=build-env /app/src/${PROJECT_NAME}/out .
 
 CMD dotnet $(echo ${EXECUTEABLE})
