@@ -31,6 +31,8 @@ WORKDIR /app
 
 RUN apk add --no-cache icu-libs krb5-libs
 
-COPY --from=build-env /app/src/${PROJECT_NAME}/out .
+COPY --from=build-env --chown=app:app /app/src/${PROJECT_NAME}/out .
+
+USER app
 
 CMD dotnet $(echo ${EXECUTEABLE})
