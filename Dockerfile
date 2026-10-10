@@ -24,9 +24,6 @@ FROM mcr.microsoft.com/dotnet/runtime:${DOTNET_VERSION}-alpine
 # Renew the ARG argument for it to be available in this build context.
 ARG PROJECT_NAME
 
-# Cannot reference ARG in CMD, so we set it in ENV instead.
-ENV EXECUTEABLE=${PROJECT_NAME}.dll
-
 WORKDIR /app
 
 RUN apk add --no-cache icu-libs krb5-libs
@@ -35,4 +32,5 @@ COPY --from=build-env --chown=app:app /app/src/${PROJECT_NAME}/out .
 
 USER app
 
-CMD dotnet $(echo ${EXECUTEABLE})
+# Exec form so dotnet runs as PID 1 and receives signals directly.
+ENTRYPOINT ["dotnet", "OpenFTTH.UserEditHistory.dll"]
